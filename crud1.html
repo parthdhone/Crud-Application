@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CRUD Application with XML File</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script>
+		$(document).ready(function(){
+			// Load data from XML file
+			$.ajax({
+				type: "GET",
+				url: "data.xml",
+				dataType: "xml",
+				success: function(xml){
+					// Loop through each record and append to the table
+					$(xml).find('record').each(function(){
+						var id = $(this).find('id').text();
+						var name = $(this).find('name').text();
+						var age = $(this).find('age').text();
+						var row = '<tr><td>' + id + '</td><td>' + name + '</td><td>' + age + '</td><td><button class="edit-btn" data-id="' + id + '">Edit</button></td><td><button class="delete-btn" data-id="' + id + '">Delete</button></td></tr>';
+						$('#records-table').append(row);
+					});
+				},
+				error: function(xhr, status, error){
+					alert("Error loading data!");
+				}
+			});
+
+			// Handle form submission for adding a new record
+			$('#add-form').submit(function(event){
+				event.preventDefault();
+				var id = $('#add-id').val();
+				var name = $('#add-name').val();
+				var age = $('#add-age').val();
+				$.ajax({
+					type: "POST",
+					url: "add_data.php",
+					data: {id: id, name: name, age: age},
+					dataType: "xml",
+					success: function(xml){
+						// Reload the table with the updated data
+						location.reload();
+					},
+					error: function(xhr, status, error){
+						alert("Error adding data!");
+					}
+				});
+			});
+
+			// Handle click event for editing a record
+			$(document).on('click', '.edit-btn', function(){
+				var id = $(this).data('id');
+				var name = $(this).closest('tr').find('td:eq(1)').text();
+				var age = $(this).closest('tr').find('td:eq(2)').text();
+				$('#edit-id').val(id);
+				$('#edit-name').val(name);
+				$('#edit-age').val(age);
+				$('#edit-modal').modal('show');
+			});
+
+			// Handle form submission for editing a record
+			$('#edit-form').submit(function(event){
+				event.preventDefault();
+				var id = $('#edit-id').val();
+				var name = $('#edit-name').val();
+				var age = $('#edit-age').val();
+                $.ajax({
+                    type: "POST",
+                    url: "edit_data.php",
+                    data: {id: id, name: name, age: age},
+                    dataType: "xml",
+                    success: function(xml){
+                        // Reload the table with the updated data
+                        location.reload();
+                    },
+                    error: function(xhr, status, error){
+                        alert("Error editing data!");
+                    }
+                });
+            });
+    
+            // Handle click event for deleting a record
+            $(document).on('click', '.delete-btn', function(){
+                var id = $(this).data('id');
+                if(confirm("Are you sure you want to delete this record?")){
+                    $.ajax({
+                        type: "POST",
+                        url: "delete_data.php",
+                        data: {id: id},
+                        dataType: "xml",
+                        success: function(xml){
+                            // Reload the table with the updated data
+                            location.reload();
+                        },
+                        error: function(xhr, status, error){
+                            alert("Error deleting data!");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+	<h1>CRUD Application with XML File</h1>
+    <!-- Add Record Form -->
+<form id="add-form">
+	<label for="add-id">ID:</label>
+	<input type="text" id="add-id" name="id" required><br><br>
+	<label for="add-name">Name:</label>
+	<input type="text" id="add-name" name="name" required><br><br>
+	<label for="add-age">Age:</label>
+	<input type="text" id="add-age" name="age" required><br><br>
+	<button type="submit">Add Record</button><br><br>
+</form>
+
+<!-- Records Table -->
+<table id="records-table" border="1">
+	<tr>
+		<th>ID</th>
+		<th>Name</th>
+		<th>Age</th>
+		<th>Edit</th>
+		<th>Delete</th>
+	</tr>
+</table><br><br>
+
+<!-- Edit Record Modal -->
+<div id="edit-modal" class="modal" style="display: non
+;" >
+	<div class="modal-content">
+		<form id="edit-form">
+			<!-- <label for="edit-id">ID:</label> -->
+			<input type="hidden" id="edit-id" name="id" readonly><br><br>
+			<label for="edit-name">Name:</label>
+			<input type="text" id="edit-name" name="name" required><br><br>
+			<label for="edit-age">Age:</label>
+			<input type="text" id="edit-age" name="age" required><br><br>
+			<input type="submit" >Save Changes</button>
+		</form>
+	</div>
+</div>
+</body>
+</html>
